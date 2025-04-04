@@ -54,6 +54,10 @@
 
         // Camera position
         camera.position.z = 5;
+        
+        const box = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3()).length();
+        camera.position.z = size * 2;
 
         // Orbit controls (mouse interaction)
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
