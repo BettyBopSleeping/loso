@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>3D Animated Model with Three.js</title>
+    <style> body { margin: 0; } canvas { display: block; } </style>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Lighting
+        const light = new THREE.AmbientLight(0xffffff, 1);
+        scene.add(light);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Load GLTF model
+        const loader = new THREE.GLTFLoader();
+        let model;
+
+        loader.load(
+            'Animation_Walking_Woman_withSkin.glb',  // Replace with your model path
+            (gltf) => {
+                model = gltf.scene;
+                scene.add(model);
+
+                // Play animation if available
+                if (gltf.animations && gltf.animations.length > 0) {
+                    const mixer = new THREE.AnimationMixer(model);
+                    const action = mixer.clipAction(gltf.animations[0]);
+                    action.play();
+
+                    // Update mixer in the animation loop
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        mixer.update(0.016); // Delta time (60 FPS)
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+                }
+            },
+            undefined,
+            (error) => console.error('Error loading model:', error)
+        );
+
+        // Camera position
+        camera.position.z = 5;
+
+        // Orbit controls (mouse interaction)
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Render loop (if no animations)
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
